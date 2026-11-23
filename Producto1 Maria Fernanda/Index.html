@@ -1,0 +1,2460 @@
+<!DOCTYPE html>
+
+<html lang="es">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Control de Inventario - Neon PostgreSQL</title>
+
+    <!-- Tailwind CSS v3 CDN with forms and container-queries -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+    <!-- Bootstrap 5 CSS -->
+    <link crossorigin="anonymous"
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+        rel="stylesheet" />
+
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+        rel="stylesheet" />
+
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap"
+        rel="stylesheet" />
+
+    <link href="estilos.css" rel="stylesheet" />
+</head>
+
+
+<body class="p-3 md:p-6 lg:p-8">
+
+
+    <!-- BEGIN: MainContainer -->
+    <main class="container-fluid max-w-7xl mx-auto">
+
+
+        <!-- BEGIN: HeaderCard -->
+        <header class="card-panel p-4 mb-4 flex justify-between items-center bg-white shadow-sm"
+            data-purpose="main-header">
+
+
+            <!-- Title & Database Info -->
+            <div class="flex items-center gap-3">
+
+                <span aria-label="caja de inventario"
+                    class="text-3xl leading-none"
+                    role="img">📦</span>
+
+                <div>
+
+                    <h1 class="text-xl md:text-2xl font-bold text-slate-900 tracking-tight leading-none mb-1">
+                        Control de Inventario
+                    </h1>
+
+                    <p class="text-xs md:text-sm text-slate-500 mb-0 font-normal">
+                        Base de datos en la nube (Neon PostgreSQL)
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- Header Options Menu -->
+            <div class="dropdown" data-purpose="header-menu">
+
+                <button aria-expanded="false"
+                    class="btn btn-light bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-slate-600 hover:bg-slate-100 flex items-center gap-1.5 transition-colors"
+                    data-bs-toggle="dropdown"
+                    id="headerDropdownMenu"
+                    type="button">
+
+                    <i class="bi bi-three-dots-vertical"></i>
+
+                    <span class="text-xs font-semibold uppercase tracking-wider hidden sm:inline">
+                        Gestionar
+                    </span>
+
+                </button>
+
+
+                <ul aria-labelledby="headerDropdownMenu"
+                    class="dropdown-menu dropdown-menu-end shadow-lg border-slate-100 rounded-xl py-2">
+
+
+                    <li id="menu-categorias">
+
+                        <a class="dropdown-item flex items-center gap-2 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                            href="Categorias.html">
+
+                            <i class="bi bi-tags text-indigo-500"></i>
+                            Categorías
+
+                        </a>
+
+                    </li>
+
+
+                    <li>
+
+                        <a class="dropdown-item flex items-center gap-2 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                            href="Index.html">
+
+                            <i class="bi bi-box-seam text-blue-500"></i>
+                            Productos
+
+                        </a>
+
+                    </li>
+
+
+                    <li id="menu-proveedores">
+
+                        <a class="dropdown-item flex items-center gap-2 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                            href="Proveedores.html">
+
+                            <i class="bi bi-truck text-emerald-500"></i>
+                            Proveedores
+
+                        </a>
+
+                    </li>
+
+
+                    <li>
+
+                        <hr class="dropdown-divider border-slate-100" />
+
+                    </li>
+
+
+                    <li>
+
+                        <button id="btn-cerrar-sesion"
+                            class="dropdown-item flex items-center gap-2 py-2 text-sm text-red-600 hover:bg-slate-50"
+                            type="button">
+
+                            <i class="bi bi-box-arrow-right"></i>
+                            Cerrar sesión
+
+                        </button>
+
+                    </li>
+
+
+                </ul>
+
+            </div>
+
+
+        </header>
+        <!-- END: HeaderCard -->
+
+
+        <!-- BEGIN: Stock Alerts -->
+
+        <div id="alertas-stock"
+            class="mb-4"
+            style="display: none;">
+
+        </div>
+
+        <!-- END: Stock Alerts -->
+
+
+        <!-- BEGIN: TwoColumnLayout -->
+
+        <div class="row g-4">
+
+
+            <!-- BEGIN: LeftColumn (Current Inventory) -->
+
+            <section class="col-12 col-lg-7 col-xl-8"
+                data-purpose="inventory-display-section">
+
+
+                <div class="card-panel p-4 h-full flex flex-col justify-between">
+
+
+                    <div>
+
+
+                        <!-- Section Header -->
+
+                        <div class="flex items-center justify-between pb-3 mb-2 border-b border-slate-100">
+
+
+                            <h2 class="text-lg font-bold text-slate-800 tracking-tight mb-0">
+                                Inventario Actual
+                            </h2>
+
+
+                            <span id="total-productos"
+                                class="badge bg-indigo-50 text-indigo-600 rounded-pill px-3 py-1.5 font-medium text-xs">
+
+                                Total: 0 registros
+
+                            </span>
+
+
+                        </div>
+
+
+                        <!-- Table Responsive Container -->
+
+                        <div class="table-responsive">
+
+
+                            <table class="table align-middle mb-0">
+
+
+                                <thead>
+
+                                    <tr>
+
+
+                                        <th class="ps-2" scope="col">
+                                            ID / PRODUCTO
+                                        </th>
+
+
+                                        <th scope="col">
+                                            CATEGORÍA
+                                        </th>
+
+
+                                        <th scope="col">
+                                            PROVEEDOR
+                                        </th>
+
+
+                                        <th class="text-center" scope="col">
+                                            STOCK
+                                        </th>
+
+
+                                        <!-- Precio compra: solo administrador -->
+
+                                        <th id="th-precio-compra"
+                                            class="text-end pe-2 d-none"
+                                            scope="col">
+
+                                            PRECIO COMPRA
+
+                                        </th>
+
+
+                                        <!-- Precio venta: todos -->
+
+                                        <th id="th-precio-venta"
+                                            class="text-end pe-2"
+                                            scope="col">
+
+                                            PRECIO VENTA
+
+                                        </th>
+
+
+                                    </tr>
+
+                                </thead>
+
+
+                                <tbody id="productos-body">
+
+                                </tbody>
+
+
+                            </table>
+
+
+                        </div>
+
+
+                    </div>
+
+
+                    <!-- Bottom Status Footer -->
+
+                    <div
+                        class="pt-4 mt-6 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
+
+
+                        <div class="flex items-center gap-2">
+
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
+
+                            <span class="font-medium text-slate-600">
+                                Conectado a Neon PostgreSQL
+                            </span>
+
+                        </div>
+
+
+                        <button id="btn-refrescar"
+                            class="text-indigo-600 hover:text-indigo-800 font-semibold inline-flex items-center gap-1 transition-colors">
+
+                            <i class="bi bi-arrow-clockwise"></i>
+                            Refrescar
+
+                        </button>
+
+
+                    </div>
+
+
+                </div>
+
+
+            </section>
+
+            <!-- END: LeftColumn -->
+
+
+            <!-- BEGIN: RightColumn (Forms / Actions) -->
+
+            <section class="col-12 col-lg-5 col-xl-4 flex flex-col gap-4"
+                data-purpose="actions-sidebar">
+
+
+                <!-- BEGIN: Card Registrar Movimiento -->
+
+                <article class="card-panel p-4"
+                    data-purpose="form-movimiento">
+
+
+                    <div class="flex items-center gap-2 mb-3">
+
+                        <span aria-label="recarga"
+                            class="text-blue-500 text-lg leading-none"
+                            role="img">
+                            🔄
+                        </span>
+
+                        <h3 class="text-base font-bold text-slate-800 mb-0">
+                            Registrar Movimiento
+                        </h3>
+
+                    </div>
+
+
+                    <form id="movement-form">
+
+
+                        <div class="row g-2 mb-2">
+
+
+                            <!-- ID Producto -->
+
+                            <div class="col-6">
+
+                                <label class="form-label-custom">
+                                    ID PRODUCTO
+                                </label>
+
+                                <input id="mov_id_producto"
+                                    class="form-control"
+                                    placeholder="Ej. 1"
+                                    type="number" />
+
+                            </div>
+
+
+                            <!-- Tipo Movimiento -->
+
+                            <div class="col-6">
+
+                                <label class="form-label-custom">
+                                    TIPO
+                                </label>
+
+                                <select id="mov_tipo"
+                                    class="form-select">
+
+                                    <option value="ENTRADA">
+                                        ENTRADA
+                                    </option>
+
+                                    <option value="AJUSTE">
+                                        AJUSTE
+                                    </option>
+
+                                    <option value="SALIDA">
+                                        SALIDA
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+
+                        </div>
+
+
+                        <div class="row g-2 mb-3">
+
+
+                            <!-- Cantidad -->
+
+                            <div class="col-6">
+
+                                <label class="form-label-custom">
+                                    CANTIDAD
+                                </label>
+
+                                <input id="mov_cantidad"
+                                    class="form-control"
+                                    min="1"
+                                    placeholder="0"
+                                    type="number" />
+
+                            </div>
+
+
+                            <!-- Motivo -->
+
+                            <div class="col-6">
+
+                                <label class="form-label-custom">
+                                    MOTIVO
+                                </label>
+
+                                <input id="mov_motivo"
+                                    class="form-control"
+                                    placeholder="Ej. Venta"
+                                    type="text" />
+
+                            </div>
+
+
+                        </div>
+
+
+                        <!-- Submit Button -->
+
+                        <button class="btn btn-movement w-full py-2 shadow-sm"
+                            type="submit">
+
+                            Guardar Movimiento
+
+                        </button>
+
+
+                    </form>
+
+
+                </article>
+
+                <!-- END: Card Registrar Movimiento -->
+
+
+                <!-- BEGIN: Card Nuevo Producto -->
+
+                <article id="admin-nuevo-producto"
+                    class="card-panel p-4"
+                    data-purpose="form-nuevo-producto">
+
+
+                    <div class="flex items-center gap-2 mb-3">
+
+                        <span class="text-purple-600 text-lg leading-none font-bold">
+                            ➕
+                        </span>
+
+                        <h3 class="text-base font-bold text-slate-800 mb-0">
+                            Nuevo Producto
+                        </h3>
+
+                    </div>
+
+
+                    <form id="product-form">
+
+
+                        <!-- Row 1 -->
+
+                        <div class="row g-2 mb-2">
+
+
+                            <div class="col-6">
+
+                                <input id="prod_nombre"
+                                    class="form-control"
+                                    placeholder="Nombre"
+                                    type="text" />
+
+                            </div>
+
+
+                            <div class="col-6">
+
+                                <input id="prod_codigo_barras"
+                                    class="form-control"
+                                    placeholder="Código Barras"
+                                    type="text" />
+
+                            </div>
+
+
+                        </div>
+
+
+                        <!-- Row 2 -->
+
+                        <div class="row g-2 mb-2">
+
+
+                            <div class="col-6">
+
+                                <select id="prod_categoria"
+                                    class="form-select">
+
+                                </select>
+
+                            </div>
+
+
+                            <div class="col-6">
+
+                                <select id="prod_proveedor"
+                                    class="form-select">
+
+                                </select>
+
+                            </div>
+
+
+                        </div>
+
+
+                        <!-- Row 3 -->
+
+                        <div class="row g-2 mb-3">
+
+
+                            <div class="col-4">
+
+                                <input id="prod_precio_compra"
+                                    class="form-control"
+                                    placeholder="P. Compra"
+                                    step="0.01"
+                                    type="number" />
+
+                            </div>
+
+
+                            <div class="col-4">
+
+                                <input id="prod_precio_venta"
+                                    class="form-control"
+                                    placeholder="P. Venta"
+                                    step="0.01"
+                                    type="number" />
+
+                            </div>
+
+
+                            <div class="col-4">
+
+                                <input id="prod_stock"
+                                    class="form-control"
+                                    placeholder="Stock"
+                                    type="number" />
+
+                            </div>
+
+
+                        </div>
+
+
+                        <!-- Submit Button -->
+
+                        <button class="btn btn-product w-full py-2 shadow-sm"
+                            type="submit">
+
+                            Registrar Producto
+
+                        </button>
+
+
+                    </form>
+
+
+                </article>
+
+                <!-- END: Card Nuevo Producto -->
+
+
+                <!-- BEGIN: Card Eliminar Producto -->
+
+                <article id="admin-eliminar-producto"
+                    class="card-panel p-4"
+                    data-purpose="form-nuevo-producto">
+
+
+                    <div class="flex items-center gap-2 mb-3">
+
+                        <span class="text-purple-600 text-lg leading-none font-bold">
+                            🗑️
+                        </span>
+
+                        <h3 class="text-base font-bold text-slate-800 mb-0">
+                            Eliminar producto
+                        </h3>
+
+                    </div>
+
+
+                    <form id="delete-product-form">
+
+
+                        <div class="row g-3">
+
+
+                            <div class="col-12">
+
+                                <input id="delete_prod_id"
+                                    class="form-control"
+                                    placeholder="ID del producto"
+                                    type="number"
+                                    min="1"
+                                    required />
+
+                            </div>
+
+
+                            <div class="col-12">
+
+                                <button type="submit"
+                                    class="btn btn-danger w-100">
+
+                                    Eliminar Producto
+
+                                </button>
+
+                            </div>
+
+
+                        </div>
+
+
+                    </form>
+
+
+                </article>
+
+                <!-- END: Card Eliminar Producto -->
+
+
+                <!-- BEGIN: Card Actualizar Producto -->
+
+                <article id="admin-actualizar-producto"
+                    class="card-panel p-4"
+                    data-purpose="form-nuevo-producto">
+
+
+                    <div class="flex items-center gap-2 mb-3">
+
+                        <span class="text-purple-600 text-lg leading-none font-bold">
+                            ✏️
+                        </span>
+
+                        <h3 class="text-base font-bold text-slate-800 mb-0">
+                            Actualizar Producto
+                        </h3>
+
+                    </div>
+
+
+                    <form id="update-product-form">
+
+
+                        <div class="row g-3">
+
+
+                            <!-- ID -->
+
+                            <div class="col-12">
+
+                                <input id="update_prod_id"
+                                    class="form-control"
+                                    placeholder="ID del producto"
+                                    type="number"
+                                    min="1"
+                                    required />
+
+                            </div>
+
+
+                            <!-- Nombre -->
+
+                            <div class="col-12">
+
+                                <input id="update_prod_nombre"
+                                    class="form-control"
+                                    placeholder="Nombre del producto"
+                                    type="text"
+                                    required />
+
+                            </div>
+
+
+                            <!-- Código -->
+
+                            <div class="col-12">
+
+                                <input id="update_prod_codigo_barras"
+                                    class="form-control"
+                                    placeholder="Código de barras"
+                                    type="text"
+                                    required />
+
+                            </div>
+
+
+                            <!-- Categoría -->
+
+                            <div class="col-md-6">
+
+                                <select id="update_prod_categoria"
+                                    class="form-select"
+                                    required>
+
+                                </select>
+
+                            </div>
+
+
+                            <!-- Proveedor -->
+
+                            <div class="col-md-6">
+
+                                <select id="update_prod_proveedor"
+                                    class="form-select"
+                                    required>
+
+                                </select>
+
+                            </div>
+
+
+                            <!-- Precio compra -->
+
+                            <div class="col-md-4">
+
+                                <input id="update_prod_precio_compra"
+                                    class="form-control"
+                                    placeholder="Precio compra"
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    required />
+
+                            </div>
+
+
+                            <!-- Precio venta -->
+
+                            <div class="col-md-4">
+
+                                <input id="update_prod_precio_venta"
+                                    class="form-control"
+                                    placeholder="Precio venta"
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    required />
+
+                            </div>
+
+
+                            <!-- Stock -->
+
+                            <div class="col-md-4">
+
+                                <input id="update_prod_stock"
+                                    class="form-control"
+                                    placeholder="Stock actual"
+                                    type="number"
+                                    min="0"
+                                    required />
+
+                            </div>
+
+
+                            <!-- Botón -->
+
+                            <div class="col-12">
+
+                                <button type="submit"
+                                    class="btn btn-primary w-100">
+
+                                    Actualizar Producto
+
+                                </button>
+
+                            </div>
+
+
+                        </div>
+
+
+                    </form>
+
+
+                </article>
+
+                <!-- END: Card Actualizar Producto -->
+
+
+            </section>
+
+            <!-- END: RightColumn -->
+
+
+        </div>
+
+        <!-- END: TwoColumnLayout -->
+
+
+    </main>
+
+    <!-- END: MainContainer -->
+
+
+    <!-- Bootstrap 5 JavaScript Bundle -->
+
+    <script crossorigin="anonymous"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+    </script>
+
+
+    <script>
+
+
+        const API_URL = "http://localhost:5042/api";
+
+
+        // =====================================================
+        // CONTROL DE ROLES
+        // =====================================================
+
+        const rol = localStorage.getItem("rol");
+
+
+        // Si no existe una sesión válida, regresar al login
+
+        if (
+            rol !== "administrador" &&
+            rol !== "vendedor" &&
+            rol !== "almacenista"
+        ) {
+
+            localStorage.removeItem("rol");
+
+            window.location.href = "Login.html";
+
+        }
+
+
+        // =====================================================
+        // ELEMENTOS DEL ADMIN
+        // =====================================================
+
+        const menuCategorias =
+            document.getElementById("menu-categorias");
+
+        const menuProveedores =
+            document.getElementById("menu-proveedores");
+
+        const nuevoProducto =
+            document.getElementById("admin-nuevo-producto");
+
+        const eliminarProducto =
+            document.getElementById("admin-eliminar-producto");
+
+        const actualizarProducto =
+            document.getElementById("admin-actualizar-producto");
+
+        const tipoMovimiento =
+            document.getElementById("mov_tipo");
+
+
+        // =====================================================
+        // ELEMENTOS DE PRECIOS
+        // =====================================================
+
+        const thPrecioCompra =
+            document.getElementById("th-precio-compra");
+
+        const thPrecioVenta =
+            document.getElementById("th-precio-venta");
+
+
+        // =====================================================
+        // ADMINISTRADOR
+        // =====================================================
+
+        if (rol === "administrador") {
+
+            // El administrador puede ver todo.
+
+            if (thPrecioCompra) {
+
+                thPrecioCompra.classList.remove("d-none");
+
+            }
+
+        }
+
+
+        // =====================================================
+        // VENDEDOR
+        // =====================================================
+
+        if (rol === "vendedor") {
+
+
+            // Ocultar categorías
+
+            if (menuCategorias)
+                menuCategorias.style.display = "none";
+
+
+            // Ocultar proveedores
+
+            if (menuProveedores)
+                menuProveedores.style.display = "none";
+
+
+            // Ocultar nuevo producto
+
+            if (nuevoProducto)
+                nuevoProducto.style.display = "none";
+
+
+            // Ocultar eliminar producto
+
+            if (eliminarProducto)
+                eliminarProducto.style.display = "none";
+
+
+            // Ocultar actualizar producto
+
+            if (actualizarProducto)
+                actualizarProducto.style.display = "none";
+
+
+            // Solo permitir SALIDA
+
+            if (tipoMovimiento) {
+
+                tipoMovimiento.innerHTML = `
+                    <option value="SALIDA">
+                        Salida
+                    </option>
+                `;
+
+            }
+
+        }
+
+
+        // =====================================================
+        // ALMACENISTA
+        // =====================================================
+
+        if (rol === "almacenista") {
+
+
+            // Ocultar categorías
+
+            if (menuCategorias)
+                menuCategorias.style.display = "none";
+
+
+            // Ocultar proveedores
+
+            if (menuProveedores)
+                menuProveedores.style.display = "none";
+
+
+            // Ocultar nuevo producto
+
+            if (nuevoProducto)
+                nuevoProducto.style.display = "none";
+
+
+            // Ocultar eliminar producto
+
+            if (eliminarProducto)
+                eliminarProducto.style.display = "none";
+
+
+            // Ocultar actualizar producto
+
+            if (actualizarProducto)
+                actualizarProducto.style.display = "none";
+
+
+            // Solo permitir ENTRADA
+
+            if (tipoMovimiento) {
+
+                tipoMovimiento.innerHTML = `
+                    <option value="ENTRADA">
+                        Entrada
+                    </option>
+                `;
+
+            }
+
+        }
+
+
+        // =====================================================
+        // CERRAR SESIÓN
+        // =====================================================
+
+        const btnCerrarSesion =
+            document.getElementById("btn-cerrar-sesion");
+
+
+        if (btnCerrarSesion) {
+
+            btnCerrarSesion.addEventListener("click", () => {
+
+                localStorage.removeItem("rol");
+
+                window.location.href = "Login.html";
+
+            });
+
+        }
+
+
+        // =====================================================
+        // ALERTAS DE STOCK
+        // =====================================================
+
+        function mostrarAlertasStock(productos) {
+
+
+            const contenedor =
+                document.getElementById("alertas-stock");
+
+
+            if (!contenedor) {
+
+                return;
+
+            }
+
+
+            // Productos con stock de 10 o menos
+
+            const productosConStockBajo =
+                productos.filter(producto =>
+                    (producto.stock_actual ?? 0) <= 10
+                );
+
+
+            // Si no hay productos con stock bajo,
+            // ocultar la alerta.
+
+            if (productosConStockBajo.length === 0) {
+
+                contenedor.innerHTML = "";
+
+                contenedor.style.display = "none";
+
+                return;
+
+            }
+
+
+            let contenido = `
+
+                <div class="card-panel p-4 bg-white shadow-sm">
+
+                    <div class="flex items-center gap-2 mb-2">
+
+                        <span class="text-xl leading-none">
+                            ⚠️
+                        </span>
+
+                        <h2 class="text-lg font-bold text-slate-800 mb-0">
+                            Alertas de inventario
+                        </h2>
+
+                    </div>
+
+
+                    <div class="text-sm text-slate-600 mb-3">
+
+                        <span class="me-3">
+                            🟡 Stock bajo
+                        </span>
+
+                        <span>
+                            🔴 Sin stock
+                        </span>
+
+                    </div>
+
+            `;
+
+
+            productosConStockBajo.forEach(producto => {
+
+
+                const stock =
+                    producto.stock_actual ?? 0;
+
+
+                if (stock === 0) {
+
+
+                    contenido += `
+
+                        <div class="mb-2 text-sm text-slate-700">
+
+                            <span class="me-1">
+                                🔴
+                            </span>
+
+                            <strong>
+                                ${producto.nombre ?? "Producto"}
+                            </strong>
+
+                            <span>
+                                Stock: ${stock}
+                            </span>
+
+                        </div>
+
+                    `;
+
+
+                } else {
+
+
+                    contenido += `
+
+                        <div class="mb-2 text-sm text-slate-700">
+
+                            <span class="me-1">
+                                🟡
+                            </span>
+
+                            <strong>
+                                ${producto.nombre ?? "Producto"}
+                            </strong>
+
+                            <span>
+                                Stock: ${stock}
+                            </span>
+
+                        </div>
+
+                    `;
+
+                }
+
+            });
+
+
+            contenido += `
+
+                </div>
+
+            `;
+
+
+            contenedor.innerHTML = contenido;
+
+            contenedor.style.display = "block";
+
+        }
+
+
+        // =====================================================
+        // INICIALIZAR
+        // =====================================================
+
+        async function inicializar() {
+
+            await cargarProductos();
+
+            await cargarCategorias();
+
+            await cargarProveedores();
+
+        }
+
+
+        // =====================================================
+        // CARGAR PRODUCTOS
+        // =====================================================
+
+        async function cargarProductos() {
+
+
+            try {
+
+
+                const respuesta =
+                    await fetch(`${API_URL}/productos`);
+
+
+                if (!respuesta.ok) {
+
+                    throw new Error(
+                        "Error al obtener los productos"
+                    );
+
+                }
+
+
+                const productos =
+                    await respuesta.json();
+
+
+                console.log(
+                    "Productos recibidos:",
+                    productos
+                );
+
+
+                // =============================================
+                // MOSTRAR ALERTAS DE STOCK
+                // =============================================
+
+                mostrarAlertasStock(productos);
+
+
+                const tbody =
+                    document.getElementById(
+                        "productos-body"
+                    );
+
+
+                if (!tbody) {
+
+                    console.error(
+                        "No se encontró el tbody productos-body"
+                    );
+
+                    return;
+
+                }
+
+
+                tbody.innerHTML = "";
+
+
+                productos.forEach(producto => {
+
+
+                    // =========================================
+                    // CELDA PRECIO DE COMPRA
+                    // SOLO ADMIN
+                    // =========================================
+
+                    let precioCompraHTML = "";
+
+
+                    if (rol === "administrador") {
+
+                        precioCompraHTML = `
+
+                            <td class="text-end pe-2 font-semibold text-slate-900">
+
+                                $${producto.precio_compra ?? 0}
+
+                            </td>
+
+                        `;
+
+                    }
+
+
+                    // =========================================
+                    // CELDA PRECIO DE VENTA
+                    // TODOS LOS ROLES
+                    // =========================================
+
+                    const precioVentaHTML = `
+
+                        <td class="text-end pe-2 font-semibold text-slate-900">
+
+                            $${producto.precio_venta ?? 0}
+
+                        </td>
+
+                    `;
+
+
+                    // =========================================
+                    // FILA DEL PRODUCTO
+                    // =========================================
+
+                    const fila = `
+
+                        <tr class="hover:bg-slate-50 transition-colors">
+
+
+                            <td class="ps-2">
+
+                                <div class="font-semibold text-slate-800">
+
+                                    ${producto.id_producto}
+
+                                </div>
+
+
+                                <div class="text-xs text-slate-400">
+
+                                    ${producto.nombre ?? ""}
+
+                                </div>
+
+                            </td>
+
+
+                            <td>
+
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-700">
+
+                                    ${producto.categoria?.nombre ?? "Sin categoría"}
+
+                                </span>
+
+                            </td>
+
+
+                            <td class="text-slate-600 text-sm">
+
+                                ${producto.proveedor?.nombre_empresa ?? "Sin proveedor"}
+
+                            </td>
+
+
+                            <td class="text-center">
+
+                                <span class="font-semibold text-slate-800">
+
+                                    ${producto.stock_actual ?? 0}
+
+                                </span>
+
+
+                                <span class="text-xs text-slate-400">
+
+                                    uds
+
+                                </span>
+
+                            </td>
+
+
+                            ${precioCompraHTML}
+
+                            ${precioVentaHTML}
+
+
+                        </tr>
+
+                    `;
+
+
+                    tbody.innerHTML += fila;
+
+
+                });
+
+
+                // =============================================
+                // ACTUALIZAR TOTAL
+                // =============================================
+
+                const total =
+                    document.getElementById(
+                        "total-productos"
+                    );
+
+
+                if (total) {
+
+                    total.textContent =
+                        `Total: ${productos.length} registros`;
+
+                }
+
+
+            }
+            catch (error) {
+
+
+                console.error(
+                    "Error al cargar productos:",
+                    error
+                );
+
+
+            }
+
+        }
+
+
+        // =====================================================
+        // BOTÓN REFRESCAR
+        // =====================================================
+
+        const btnRefrescar =
+            document.getElementById("btn-refrescar");
+
+
+        if (btnRefrescar) {
+
+            btnRefrescar.addEventListener(
+                "click",
+                async () => {
+
+                    await cargarProductos();
+
+                }
+            );
+
+        }
+
+
+        // =====================================================
+        // CARGAR CATEGORÍAS
+        // =====================================================
+
+        async function cargarCategorias() {
+
+
+            try {
+
+
+                const respuesta =
+                    await fetch(`${API_URL}/Categorias`);
+
+
+                if (!respuesta.ok) {
+
+                    throw new Error(
+                        "Error al obtener las categorías"
+                    );
+
+                }
+
+
+                const categorias =
+                    await respuesta.json();
+
+
+                console.log(
+                    "Categorías recibidas:",
+                    categorias
+                );
+
+
+                // Select Nuevo Producto
+
+                const selectNuevo =
+                    document.getElementById(
+                        "prod_categoria"
+                    );
+
+
+                // Select Actualizar Producto
+
+                const selectActualizar =
+                    document.getElementById(
+                        "update_prod_categoria"
+                    );
+
+
+                // Limpiar opciones
+
+                if (selectNuevo) {
+
+                    selectNuevo.innerHTML = `
+
+                        <option value="">
+                            Categoría
+                        </option>
+
+                    `;
+
+                }
+
+
+                if (selectActualizar) {
+
+                    selectActualizar.innerHTML = `
+
+                        <option value="">
+                            Categoría
+                        </option>
+
+                    `;
+
+                }
+
+
+                // Agregar categorías
+
+                categorias.forEach(categoria => {
+
+
+                    if (selectNuevo) {
+
+                        selectNuevo.innerHTML += `
+
+                            <option value="${categoria.id_categoria}">
+
+                                ${categoria.nombre}
+
+                            </option>
+
+                        `;
+
+                    }
+
+
+                    if (selectActualizar) {
+
+                        selectActualizar.innerHTML += `
+
+                            <option value="${categoria.id_categoria}">
+
+                                ${categoria.nombre}
+
+                            </option>
+
+                        `;
+
+                    }
+
+
+                });
+
+
+            }
+            catch (error) {
+
+
+                console.error(
+                    "Error al cargar categorías:",
+                    error
+                );
+
+
+            }
+
+        }
+
+
+        // =====================================================
+        // CARGAR PROVEEDORES
+        // =====================================================
+
+        async function cargarProveedores() {
+
+
+            try {
+
+
+                const respuesta =
+                    await fetch(`${API_URL}/Proveedores`);
+
+
+                if (!respuesta.ok) {
+
+                    throw new Error(
+                        "Error al obtener los proveedores"
+                    );
+
+                }
+
+
+                const proveedores =
+                    await respuesta.json();
+
+
+                console.log(
+                    "Proveedores recibidos:",
+                    proveedores
+                );
+
+
+                // Select Nuevo Producto
+
+                const selectNuevo =
+                    document.getElementById(
+                        "prod_proveedor"
+                    );
+
+
+                // Select Actualizar Producto
+
+                const selectActualizar =
+                    document.getElementById(
+                        "update_prod_proveedor"
+                    );
+
+
+                // Limpiar opciones
+
+                if (selectNuevo) {
+
+                    selectNuevo.innerHTML = `
+
+                        <option value="">
+                            Proveedor
+                        </option>
+
+                    `;
+
+                }
+
+
+                if (selectActualizar) {
+
+                    selectActualizar.innerHTML = `
+
+                        <option value="">
+                            Proveedor
+                        </option>
+
+                    `;
+
+                }
+
+
+                // Agregar proveedores
+
+                proveedores.forEach(proveedor => {
+
+
+                    if (selectNuevo) {
+
+                        selectNuevo.innerHTML += `
+
+                            <option value="${proveedor.id_proveedor}">
+
+                                ${proveedor.nombre_empresa}
+
+                            </option>
+
+                        `;
+
+                    }
+
+
+                    if (selectActualizar) {
+
+                        selectActualizar.innerHTML += `
+
+                            <option value="${proveedor.id_proveedor}">
+
+                                ${proveedor.nombre_empresa}
+
+                            </option>
+
+                        `;
+
+                    }
+
+
+                });
+
+
+            }
+            catch (error) {
+
+
+                console.error(
+                    "Error al cargar proveedores:",
+                    error
+                );
+
+
+            }
+
+        }
+
+
+        // =====================================================
+        // REGISTRAR MOVIMIENTO
+        // =====================================================
+
+        document
+            .getElementById("movement-form")
+            .addEventListener(
+                "submit",
+                async (e) => {
+
+
+                    e.preventDefault();
+
+
+                    // Obtener datos
+
+                    const idProducto =
+                        document.getElementById(
+                            "mov_id_producto"
+                        ).value;
+
+
+                    const tipo =
+                        document.getElementById(
+                            "mov_tipo"
+                        ).value;
+
+
+                    const cantidad =
+                        document.getElementById(
+                            "mov_cantidad"
+                        ).value;
+
+
+                    // Validar
+
+                    if (!idProducto || !cantidad) {
+
+                        alert(
+                            "Completa el ID del producto y la cantidad."
+                        );
+
+                        return;
+
+                    }
+
+
+                    try {
+
+
+                        const respuesta =
+                            await fetch(
+                                `${API_URL}/Productos/movimiento?id_producto=${idProducto}&tipo=${tipo}&cantidad=${cantidad}`,
+                                {
+                                    method: "POST"
+                                }
+                            );
+
+
+                        if (!respuesta.ok) {
+
+                            const mensaje =
+                                await respuesta.text();
+
+                            throw new Error(mensaje);
+
+                        }
+
+
+                        const productoActualizado =
+                            await respuesta.json();
+
+
+                        console.log(
+                            "Movimiento realizado:",
+                            productoActualizado
+                        );
+
+
+                        alert(
+                            "Movimiento registrado correctamente."
+                        );
+
+
+                        // Limpiar formulario
+
+                        document
+                            .getElementById(
+                                "movement-form"
+                            )
+                            .reset();
+
+
+                        // Volver a cargar productos.
+                        // Esto también actualiza las alertas.
+
+                        await cargarProductos();
+
+
+                    }
+                    catch (error) {
+
+
+                        console.error(
+                            "Error al registrar movimiento:",
+                            error
+                        );
+
+
+                        alert(error.message);
+
+
+                    }
+
+
+                }
+            );
+
+
+        // =====================================================
+        // REGISTRAR NUEVO PRODUCTO
+        // =====================================================
+
+        document
+            .getElementById("product-form")
+            .addEventListener(
+                "submit",
+                async (e) => {
+
+
+                    e.preventDefault();
+
+
+                    const producto = {
+
+
+                        nombre:
+                            document.getElementById(
+                                "prod_nombre"
+                            ).value,
+
+
+                        codigo_barras:
+                            document.getElementById(
+                                "prod_codigo_barras"
+                            ).value,
+
+
+                        id_categoria:
+                            Number(
+                                document.getElementById(
+                                    "prod_categoria"
+                                ).value
+                            ),
+
+
+                        id_proveedor:
+                            Number(
+                                document.getElementById(
+                                    "prod_proveedor"
+                                ).value
+                            ),
+
+
+                        precio_compra:
+                            Number(
+                                document.getElementById(
+                                    "prod_precio_compra"
+                                ).value
+                            ),
+
+
+                        precio_venta:
+                            Number(
+                                document.getElementById(
+                                    "prod_precio_venta"
+                                ).value
+                            ),
+
+
+                        stock_actual:
+                            Number(
+                                document.getElementById(
+                                    "prod_stock"
+                                ).value
+                            )
+
+
+                    };
+
+
+                    // Validar
+
+                    if (
+                        !producto.nombre ||
+                        !producto.codigo_barras ||
+                        !producto.id_categoria ||
+                        !producto.id_proveedor ||
+                        !producto.precio_compra ||
+                        !producto.precio_venta ||
+                        producto.stock_actual < 0
+                    ) {
+
+
+                        alert(
+                            "Completa todos los campos del producto."
+                        );
+
+
+                        return;
+
+                    }
+
+
+                    try {
+
+
+                        const respuesta =
+                            await fetch(
+                                `${API_URL}/Productos`,
+                                {
+
+                                    method: "POST",
+
+                                    headers: {
+
+                                        "Content-Type":
+                                            "application/json"
+
+                                    },
+
+                                    body:
+                                        JSON.stringify(producto)
+
+                                }
+                            );
+
+
+                        if (!respuesta.ok) {
+
+
+                            const mensaje =
+                                await respuesta.text();
+
+
+                            throw new Error(mensaje);
+
+
+                        }
+
+
+                        const productoCreado =
+                            await respuesta.json();
+
+
+                        console.log(
+                            "Producto creado:",
+                            productoCreado
+                        );
+
+
+                        alert(
+                            "Producto registrado correctamente."
+                        );
+
+
+                        // Limpiar formulario
+
+                        document
+                            .getElementById(
+                                "product-form"
+                            )
+                            .reset();
+
+
+                        // Actualizar tabla y alertas
+
+                        await cargarProductos();
+
+
+                        await cargarCategorias();
+
+                        await cargarProveedores();
+
+
+                    }
+                    catch (error) {
+
+
+                        console.error(
+                            "Error al registrar producto:",
+                            error
+                        );
+
+
+                        alert(error.message);
+
+
+                    }
+
+
+                }
+            );
+
+
+        // =====================================================
+        // CARGAR PRODUCTO PARA ACTUALIZAR
+        // =====================================================
+
+        document
+            .getElementById("update_prod_id")
+            .addEventListener(
+                "change",
+                async () => {
+
+
+                    const id =
+                        document.getElementById(
+                            "update_prod_id"
+                        ).value;
+
+
+                    if (!id) {
+
+                        return;
+
+                    }
+
+
+                    try {
+
+
+                        const respuesta =
+                            await fetch(
+                                `${API_URL}/Productos/${id}`
+                            );
+
+
+                        if (!respuesta.ok) {
+
+
+                            if (
+                                respuesta.status === 404
+                            ) {
+
+
+                                throw new Error(
+                                    "No se encontró el producto."
+                                );
+
+
+                            }
+
+
+                            throw new Error(
+                                "Error al buscar el producto."
+                            );
+
+
+                        }
+
+
+                        const producto =
+                            await respuesta.json();
+
+
+                        console.log(
+                            "Producto encontrado para actualizar:",
+                            producto
+                        );
+
+
+                        // Llenar formulario
+
+                        document.getElementById(
+                            "update_prod_nombre"
+                        ).value =
+                            producto.nombre ?? "";
+
+
+                        document.getElementById(
+                            "update_prod_codigo_barras"
+                        ).value =
+                            producto.codigo_barras ?? "";
+
+
+                        document.getElementById(
+                            "update_prod_categoria"
+                        ).value =
+                            producto.id_categoria ?? "";
+
+
+                        document.getElementById(
+                            "update_prod_proveedor"
+                        ).value =
+                            producto.id_proveedor ?? "";
+
+
+                        document.getElementById(
+                            "update_prod_precio_compra"
+                        ).value =
+                            producto.precio_compra ?? "";
+
+
+                        document.getElementById(
+                            "update_prod_precio_venta"
+                        ).value =
+                            producto.precio_venta ?? "";
+
+
+                        document.getElementById(
+                            "update_prod_stock"
+                        ).value =
+                            producto.stock_actual ?? "";
+
+
+                    }
+                    catch (error) {
+
+
+                        console.error(
+                            "Error al buscar producto:",
+                            error
+                        );
+
+
+                        alert(error.message);
+
+
+                    }
+
+
+                }
+            );
+
+
+        // =====================================================
+        // ACTUALIZAR PRODUCTO
+        // =====================================================
+
+        document
+            .getElementById("update-product-form")
+            .addEventListener(
+                "submit",
+                async (e) => {
+
+
+                    e.preventDefault();
+
+
+                    const id =
+                        Number(
+                            document.getElementById(
+                                "update_prod_id"
+                            ).value
+                        );
+
+
+                    const producto = {
+
+
+                        id_producto: id,
+
+
+                        nombre:
+                            document.getElementById(
+                                "update_prod_nombre"
+                            ).value,
+
+
+                        codigo_barras:
+                            document.getElementById(
+                                "update_prod_codigo_barras"
+                            ).value,
+
+
+                        id_categoria:
+                            Number(
+                                document.getElementById(
+                                    "update_prod_categoria"
+                                ).value
+                            ),
+
+
+                        id_proveedor:
+                            Number(
+                                document.getElementById(
+                                    "update_prod_proveedor"
+                                ).value
+                            ),
+
+
+                        precio_compra:
+                            Number(
+                                document.getElementById(
+                                    "update_prod_precio_compra"
+                                ).value
+                            ),
+
+
+                        precio_venta:
+                            Number(
+                                document.getElementById(
+                                    "update_prod_precio_venta"
+                                ).value
+                            ),
+
+
+                        stock_actual:
+                            Number(
+                                document.getElementById(
+                                    "update_prod_stock"
+                                ).value
+                            )
+
+
+                    };
+
+
+                    // Validar
+
+                    if (
+                        !producto.id_producto ||
+                        !producto.nombre ||
+                        !producto.codigo_barras ||
+                        !producto.id_categoria ||
+                        !producto.id_proveedor ||
+                        producto.precio_compra < 0 ||
+                        producto.precio_venta < 0 ||
+                        producto.stock_actual < 0
+                    ) {
+
+
+                        alert(
+                            "Completa correctamente todos los campos."
+                        );
+
+
+                        return;
+
+                    }
+
+
+                    try {
+
+
+                        const respuesta =
+                            await fetch(
+                                `${API_URL}/Productos/${id}`,
+                                {
+
+                                    method: "PUT",
+
+                                    headers: {
+
+                                        "Content-Type":
+                                            "application/json"
+
+                                    },
+
+                                    body:
+                                        JSON.stringify(producto)
+
+                                }
+                            );
+
+
+                        if (!respuesta.ok) {
+
+
+                            const mensaje =
+                                await respuesta.text();
+
+
+                            throw new Error(mensaje);
+
+
+                        }
+
+
+                        const productoActualizado =
+                            await respuesta.json();
+
+
+                        console.log(
+                            "Producto actualizado:",
+                            productoActualizado
+                        );
+
+
+                        alert(
+                            "Producto actualizado correctamente."
+                        );
+
+
+                        // Limpiar formulario
+
+                        document
+                            .getElementById(
+                                "update-product-form"
+                            )
+                            .reset();
+
+
+                        // Actualizar tabla y alertas
+
+                        await cargarProductos();
+
+
+                    }
+                    catch (error) {
+
+
+                        console.error(
+                            "Error al actualizar producto:",
+                            error
+                        );
+
+
+                        alert(error.message);
+
+
+                    }
+
+
+                }
+            );
+
+
+        // =====================================================
+        // ELIMINAR PRODUCTO
+        // =====================================================
+
+        document
+            .getElementById("delete-product-form")
+            .addEventListener(
+                "submit",
+                async (e) => {
+
+
+                    e.preventDefault();
+
+
+                    const id =
+                        document.getElementById(
+                            "delete_prod_id"
+                        ).value;
+
+
+                    if (!id) {
+
+
+                        alert(
+                            "Ingresa el ID del producto."
+                        );
+
+
+                        return;
+
+                    }
+
+
+                    // Confirmación
+
+                    const confirmar =
+                        confirm(
+                            `¿Seguro que quieres eliminar el producto con ID ${id}?`
+                        );
+
+
+                    if (!confirmar) {
+
+                        return;
+
+                    }
+
+
+                    try {
+
+
+                        const respuesta =
+                            await fetch(
+                                `${API_URL}/Productos/${id}`,
+                                {
+                                    method: "DELETE"
+                                }
+                            );
+
+
+                        if (!respuesta.ok) {
+
+
+                            const mensaje =
+                                await respuesta.text();
+
+
+                            throw new Error(mensaje);
+
+
+                        }
+
+
+                        const mensaje =
+                            await respuesta.text();
+
+
+                        console.log(
+                            "Producto eliminado:",
+                            mensaje
+                        );
+
+
+                        alert(
+                            "Producto eliminado correctamente."
+                        );
+
+
+                        // Limpiar formulario
+
+                        document
+                            .getElementById(
+                                "delete-product-form"
+                            )
+                            .reset();
+
+
+                        // Actualizar tabla y alertas
+
+                        await cargarProductos();
+
+
+                    }
+                    catch (error) {
+
+
+                        console.error(
+                            "Error al eliminar producto:",
+                            error
+                        );
+
+
+                        alert(error.message);
+
+
+                    }
+
+
+                }
+            );
+
+
+        // =====================================================
+        // INICIAR
+        // =====================================================
+
+        inicializar();
+
+
+    </script>
+
+
+</body>
+
+</html>

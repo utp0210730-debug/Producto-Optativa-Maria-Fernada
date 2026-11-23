@@ -1,0 +1,6 @@
+@AppOptativa_HostAddress = http://localhost:5042
+
+GET {{AppOptativa_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

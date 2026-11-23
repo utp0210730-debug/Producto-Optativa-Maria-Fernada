@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+
+<html lang="es">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Control de Proveedores - Neon PostgreSQL</title>
+
+    <!-- Tailwind CSS v3 CDN with forms and container-queries -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+    <!-- Bootstrap 5 CSS -->
+    <link crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" rel="stylesheet" />
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap"
+        rel="stylesheet" />
+
+    <link href="estilos.css" rel="stylesheet" />
+</head>
+
+<body class="p-3 md:p-6 lg:p-8">
+
+    <!-- BEGIN: MainContainer -->
+    <main class="container-fluid max-w-7xl mx-auto">
+
+        <!-- BEGIN: HeaderCard -->
+        <header class="card-panel p-4 mb-4 flex justify-between items-center bg-white shadow-sm"
+            data-purpose="main-header">
+
+            <!-- Title & Database Info -->
+            <div class="flex items-center gap-3">
+
+                <span aria-label="caja de inventario" class="text-3xl leading-none" role="img">📦</span>
+
+                <div>
+
+                    <h1 class="text-xl md:text-2xl font-bold text-slate-900 tracking-tight leading-none mb-1">
+                        Control de Proveedores
+                    </h1>
+
+                    <p class="text-xs md:text-sm text-slate-500 mb-0 font-normal">
+                        Base de datos en la nube (Neon PostgreSQL)
+                    </p>
+
+                </div>
+
+            </div>
+
+            <!-- Header Options Menu -->
+            <div class="dropdown" data-purpose="header-menu">
+
+                <button aria-expanded="false"
+                    class="btn btn-light bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-slate-600 hover:bg-slate-100 flex items-center gap-1.5 transition-colors"
+                    data-bs-toggle="dropdown" id="headerDropdownMenu" type="button">
+
+                    <i class="bi bi-three-dots-vertical"></i>
+
+                    <span class="text-xs font-semibold uppercase tracking-wider hidden sm:inline">
+                        Gestionar
+                    </span>
+
+                </button>
+
+                <ul aria-labelledby="headerDropdownMenu"
+                    class="dropdown-menu dropdown-menu-end shadow-lg border-slate-100 rounded-xl py-2">
+
+                    <li>
+                        <a class="dropdown-item flex items-center gap-2 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                            href="Categorias.html">
+
+                            <i class="bi bi-tags text-indigo-500"></i> Categorías
+
+                        </a>
+                    </li>
+
+                    <li>
+                        <a class="dropdown-item flex items-center gap-2 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                            href="Index.html">
+
+                            <i class="bi bi-box-seam text-blue-500"></i> Productos
+
+                        </a>
+                    </li>
+
+                    <li>
+                        <a class="dropdown-item flex items-center gap-2 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                            href="Proveedores.html">
+
+                            <i class="bi bi-truck text-emerald-500"></i> Proveedores
+
+                        </a>
+                    </li>
+
+                    <li>
+                        <hr class="dropdown-divider border-slate-100" />
+                    </li>
+
+                    <li>
+                        <button id="btn-cerrar-sesion"
+                            class="dropdown-item flex items-center gap-2 py-2 text-sm text-red-600 hover:bg-slate-50"
+                            type="button">
+
+                            <i class="bi bi-box-arrow-right"></i> Cerrar sesión
+
+                        </button>
+                    </li>
+
+                </ul>
+
+            </div>
+
+        </header>
+        <!-- END: HeaderCard -->
+
+
+        <!-- BEGIN: TwoColumnLayout -->
+        <div class="row g-4">
+
+            <!-- BEGIN: LeftColumn (Current Providers) -->
+            <section class="col-12 col-lg-7 col-xl-8" data-purpose="inventory-display-section">
+
+                <div class="card-panel p-4 h-full flex flex-col justify-between">
+
+                    <div>
+
+                        <!-- Section Header -->
+                        <div class="flex items-center justify-between pb-3 mb-2 border-b border-slate-100">
+
+                            <h2 class="text-lg font-bold text-slate-800 tracking-tight mb-0">
+                                Proveedores Actuales
+                            </h2>
+
+                            <span id="total-proveedores"
+                                class="badge bg-indigo-50 text-indigo-600 rounded-pill px-3 py-1.5 font-medium text-xs">
+                                Total: 0 registros
+                            </span>
+
+                        </div>
+
+                        <!-- Table Responsive Container -->
+                        <div class="table-responsive">
+
+                            <table class="table align-middle mb-0">
+
+                                <thead>
+
+                                    <tr>
+
+                                        <th class="ps-2" scope="col">
+                                            ID / EMPRESA
+                                        </th>
+
+                                        <th scope="col">
+                                            CONTACTO
+                                        </th>
+
+                                        <th scope="col">
+                                            TELÉFONO
+                                        </th>
+
+                                        <th scope="col">
+                                            EMAIL
+                                        </th>
+
+                                        <th class="text-end pe-2" scope="col">
+                                            DIRECCIÓN
+                                        </th>
+
+                                    </tr>
+
+                                </thead>
+
+                                <tbody id="proveedores-body">
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                    </div>
+
+                    <!-- Bottom Status Footer -->
+                    <div
+                        class="pt-4 mt-6 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
+
+                        <div class="flex items-center gap-2">
+
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
+
+                            <span class="font-medium text-slate-600">
+                                Conectado a Neon PostgreSQL
+                            </span>
+
+                        </div>
+
+                        <button id="btn-refrescar"
+                            class="text-indigo-600 hover:text-indigo-800 font-semibold inline-flex items-center gap-1 transition-colors">
+
+                            <i class="bi bi-arrow-clockwise"></i> Refrescar
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </section>
+            <!-- END: LeftColumn -->
+
+
+            <!-- BEGIN: RightColumn (Forms / Actions) -->
+            <section class="col-12 col-lg-5 col-xl-4 flex flex-col gap-4" data-purpose="actions-sidebar">
+
+
+                <!-- BEGIN: Card Nuevo Proveedor -->
+                <article class="card-panel p-4" data-purpose="form-nuevo-producto">
+
+                    <div class="flex items-center gap-2 mb-3">
+
+                        <span class="text-purple-600 text-lg leading-none font-bold">➕</span>
+
+                        <h3 class="text-base font-bold text-slate-800 mb-0">
+                            Nuevo Proveedor
+                        </h3>
+
+                    </div>
+
+                    <form id="provider-form">
+
+                        <!-- Row 1: Empresa & Contacto -->
+                        <div class="row g-2 mb-2">
+
+                            <div class="col-6">
+
+                                <input id="prov_nombre_empresa" class="form-control" placeholder="Empresa"
+                                    type="text" />
+
+                            </div>
+
+                            <div class="col-6">
+
+                                <input id="prov_contacto_nombre" class="form-control" placeholder="Contacto"
+                                    type="text" />
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- Row 2: Teléfono & Email -->
+                        <div class="row g-2 mb-2">
+
+                            <div class="col-6">
+
+                                <input id="prov_telefono" class="form-control" placeholder="Teléfono" type="text" />
+
+                            </div>
+
+                            <div class="col-6">
+
+                                <input id="prov_email" class="form-control" placeholder="Email" type="email" />
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- Row 3: Dirección -->
+                        <div class="row g-2 mb-3">
+
+                            <div class="col-12">
+
+                                <input id="prov_direccion" class="form-control" placeholder="Dirección" type="text" />
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- Submit Button -->
+                        <button class="btn btn-product w-full py-2 shadow-sm" type="submit">
+                            Registrar Proveedor
+                        </button>
+
+                    </form>
+
+                </article>
+                <!-- END: Card Nuevo Proveedor -->
+
+
+                <!-- BEGIN: Card Eliminar Proveedor -->
+                <article class="card-panel p-4" data-purpose="form-nuevo-producto">
+
+                    <div class="flex items-center gap-2 mb-3">
+
+                        <span class="text-purple-600 text-lg leading-none font-bold">🗑️</span>
+
+                        <h3 class="text-base font-bold text-slate-800 mb-0">
+                            Eliminar proveedor
+                        </h3>
+
+                    </div>
+
+                    <form id="delete-provider-form">
+
+                        <div class="row g-3">
+
+                            <div class="col-12">
+
+                                <input id="delete_prov_id" class="form-control" placeholder="ID del proveedor"
+                                    type="number" min="1" required />
+
+                            </div>
+
+                            <div class="col-12">
+
+                                <button type="submit" class="btn btn-danger w-100">
+                                    Eliminar Proveedor
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                    </form>
+
+                </article>
+                <!-- END: Card Eliminar Proveedor -->
+
+
+                <!-- BEGIN: Card Actualizar Proveedor -->
+                <article class="card-panel p-4" data-purpose="form-nuevo-producto">
+
+                    <div class="flex items-center gap-2 mb-3">
+
+                        <span class="text-purple-600 text-lg leading-none font-bold">✏️</span>
+
+                        <h3 class="text-base font-bold text-slate-800 mb-0">
+                            Actualizar Proveedor
+                        </h3>
+
+                    </div>
+
+                    <form id="update-provider-form">
+
+                        <div class="row g-3">
+
+                            <!-- ID del proveedor -->
+                            <div class="col-12">
+
+                                <input id="update_prov_id" class="form-control" placeholder="ID del proveedor"
+                                    type="number" min="1" required />
+
+                            </div>
+
+
+                            <!-- Nombre empresa -->
+                            <div class="col-12">
+
+                                <input id="update_prov_nombre_empresa" class="form-control"
+                                    placeholder="Nombre de la empresa" type="text" required />
+
+                            </div>
+
+
+                            <!-- Nombre contacto -->
+                            <div class="col-12">
+
+                                <input id="update_prov_contacto_nombre" class="form-control"
+                                    placeholder="Nombre del contacto" type="text" required />
+
+                            </div>
+
+
+                            <!-- Teléfono -->
+                            <div class="col-md-6">
+
+                                <input id="update_prov_telefono" class="form-control" placeholder="Teléfono" type="text"
+                                    required />
+
+                            </div>
+
+
+                            <!-- Email -->
+                            <div class="col-md-6">
+
+                                <input id="update_prov_email" class="form-control" placeholder="Correo electrónico"
+                                    type="email" required />
+
+                            </div>
+
+
+                            <!-- Dirección -->
+                            <div class="col-12">
+
+                                <input id="update_prov_direccion" class="form-control" placeholder="Dirección"
+                                    type="text" required />
+
+                            </div>
+
+
+                            <!-- Botón -->
+                            <div class="col-12">
+
+                                <button type="submit" class="btn btn-primary w-100">
+                                    Actualizar Proveedor
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                    </form>
+
+                </article>
+                <!-- END: Card Actualizar Proveedor -->
+
+            </section>
+            <!-- END: RightColumn -->
+
+        </div>
+        <!-- END: TwoColumnLayout -->
+
+    </main>
+    <!-- END: MainContainer -->
+
+
+    <!-- Bootstrap 5 JavaScript Bundle -->
+    <script crossorigin="anonymous" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+
+        </script>
+
+
+    <script>
+
+        const API_URL = "http://localhost:5042/api";
+
+
+        // =========================
+        // CONTROL DE ACCESO
+        // =========================
+
+        const rol = localStorage.getItem("rol");
+
+
+        // Solo el administrador puede entrar
+        if (rol !== "administrador") {
+
+            window.location.href = "Index.html";
+
+        }
+
+
+        // =========================
+        // CERRAR SESIÓN
+        // =========================
+
+        const btnCerrarSesion =
+            document.getElementById("btn-cerrar-sesion");
+
+
+        if (btnCerrarSesion) {
+
+            btnCerrarSesion.addEventListener(
+                "click",
+                () => {
+
+                    localStorage.removeItem("rol");
+
+                    window.location.href = "Login.html";
+
+                }
+            );
+
+        }
+
+
+        // =========================
+        // CARGAR PROVEEDORES
+        // =========================
+
+        async function cargarProveedores() {
+
+            try {
+
+                const respuesta =
+                    await fetch(
+                        `${API_URL}/Proveedores`
+                    );
+
+
+                if (!respuesta.ok) {
+
+                    throw new Error(
+                        "Error al obtener los proveedores"
+                    );
+
+                }
+
+
+                const proveedores =
+                    await respuesta.json();
+
+
+                console.log(
+                    "Proveedores recibidos:",
+                    proveedores
+                );
+
+
+                const tbody =
+                    document.getElementById(
+                        "proveedores-body"
+                    );
+
+
+                if (!tbody) {
+
+                    console.error(
+                        "No se encontró el tbody proveedores-body"
+                    );
+
+                    return;
+
+                }
+
+
+                tbody.innerHTML = "";
+
+
+                proveedores.forEach(proveedor => {
+
+                    const fila = `
+
+                    <tr class="hover:bg-slate-50 transition-colors">
+
+                        <td class="ps-2">
+
+                            <div class="font-semibold text-slate-800">
+
+                                ${proveedor.id_proveedor}
+
+                            </div>
+
+
+                            <div class="text-xs text-slate-400">
+
+                                ${proveedor.nombre_empresa ?? ""}
+
+                            </div>
+
+                        </td>
+
+
+                        <td class="text-slate-600 text-sm">
+
+                            ${proveedor.contacto_nombre ?? "Sin contacto"}
+
+                        </td>
+
+
+                        <td class="text-slate-600 text-sm">
+
+                            ${proveedor.telefono ?? "Sin teléfono"}
+
+                        </td>
+
+
+                        <td class="text-slate-600 text-sm">
+
+                            ${proveedor.email ?? "Sin correo"}
+
+                        </td>
+
+
+                        <td class="text-end pe-2 text-slate-600 text-sm">
+
+                            ${proveedor.direccion ?? "Sin dirección"}
+
+                        </td>
+
+                    </tr>
+
+                `;
+
+
+                    tbody.innerHTML += fila;
+
+                });
+
+
+                // Actualizar total de proveedores
+
+                const total =
+                    document.getElementById(
+                        "total-proveedores"
+                    );
+
+
+                if (total) {
+
+                    total.textContent =
+                        `Total: ${proveedores.length} registros`;
+
+                }
+
+            }
+            catch (error) {
+
+                console.error(
+                    "Error al cargar proveedores:",
+                    error
+                );
+
+            }
+
+        }
+
+
+        // =========================
+        // REGISTRAR NUEVO PROVEEDOR
+        // =========================
+
+        document
+            .getElementById("provider-form")
+            .addEventListener(
+                "submit",
+                async (e) => {
+
+                    e.preventDefault();
+
+
+                    const proveedor = {
+
+                        nombre_empresa:
+                            document.getElementById(
+                                "prov_nombre_empresa"
+                            ).value,
+
+
+                        contacto_nombre:
+                            document.getElementById(
+                                "prov_contacto_nombre"
+                            ).value,
+
+
+                        telefono:
+                            document.getElementById(
+                                "prov_telefono"
+                            ).value,
+
+
+                        email:
+                            document.getElementById(
+                                "prov_email"
+                            ).value,
+
+
+                        direccion:
+                            document.getElementById(
+                                "prov_direccion"
+                            ).value
+
+                    };
+
+
+                    // Validar campos
+
+                    if (
+                        !proveedor.nombre_empresa ||
+                        !proveedor.contacto_nombre ||
+                        !proveedor.telefono ||
+                        !proveedor.email ||
+                        !proveedor.direccion
+                    ) {
+
+                        alert(
+                            "Completa todos los campos del proveedor."
+                        );
+
+                        return;
+
+                    }
+
+
+                    try {
+
+                        const respuesta =
+                            await fetch(
+                                `${API_URL}/Proveedores`,
+                                {
+
+                                    method: "POST",
+
+                                    headers: {
+                                        "Content-Type":
+                                            "application/json"
+                                    },
+
+                                    body:
+                                        JSON.stringify(proveedor)
+
+                                }
+                            );
+
+
+                        if (!respuesta.ok) {
+
+                            const mensaje =
+                                await respuesta.text();
+
+                            throw new Error(mensaje);
+
+                        }
+
+
+                        const proveedorCreado =
+                            await respuesta.json();
+
+
+                        console.log(
+                            "Proveedor creado:",
+                            proveedorCreado
+                        );
+
+
+                        alert(
+                            "Proveedor registrado correctamente."
+                        );
+
+
+                        // Limpiar formulario
+
+                        document
+                            .getElementById(
+                                "provider-form"
+                            )
+                            .reset();
+
+
+                        // Volver a cargar tabla
+
+                        await cargarProveedores();
+
+                    }
+                    catch (error) {
+
+                        console.error(
+                            "Error al registrar proveedor:",
+                            error
+                        );
+
+                        alert(error.message);
+
+                    }
+
+                }
+            );
+
+
+        // =========================
+        // CARGAR PROVEEDOR PARA ACTUALIZAR
+        // =========================
+
+        document
+            .getElementById("update_prov_id")
+            .addEventListener(
+                "change",
+                async () => {
+
+                    const id =
+                        document.getElementById(
+                            "update_prov_id"
+                        ).value;
+
+
+                    if (!id) {
+
+                        return;
+
+                    }
+
+
+                    try {
+
+                        const respuesta =
+                            await fetch(
+                                `${API_URL}/Proveedores/${id}`
+                            );
+
+
+                        if (!respuesta.ok) {
+
+                            if (
+                                respuesta.status === 404
+                            ) {
+
+                                throw new Error(
+                                    "No se encontró el proveedor."
+                                );
+
+                            }
+
+
+                            throw new Error(
+                                "Error al buscar el proveedor."
+                            );
+
+                        }
+
+
+                        const proveedor =
+                            await respuesta.json();
+
+
+                        console.log(
+                            "Proveedor encontrado para actualizar:",
+                            proveedor
+                        );
+
+
+                        // Llenar formulario
+
+                        document.getElementById(
+                            "update_prov_nombre_empresa"
+                        ).value =
+                            proveedor.nombre_empresa ?? "";
+
+
+                        document.getElementById(
+                            "update_prov_contacto_nombre"
+                        ).value =
+                            proveedor.contacto_nombre ?? "";
+
+
+                        document.getElementById(
+                            "update_prov_telefono"
+                        ).value =
+                            proveedor.telefono ?? "";
+
+
+                        document.getElementById(
+                            "update_prov_email"
+                        ).value =
+                            proveedor.email ?? "";
+
+
+                        document.getElementById(
+                            "update_prov_direccion"
+                        ).value =
+                            proveedor.direccion ?? "";
+
+                    }
+                    catch (error) {
+
+                        console.error(
+                            "Error al buscar proveedor:",
+                            error
+                        );
+
+                        alert(error.message);
+
+                    }
+
+                }
+            );
+
+
+        // =========================
+        // ACTUALIZAR PROVEEDOR
+        // =========================
+
+        document
+            .getElementById("update-provider-form")
+            .addEventListener(
+                "submit",
+                async (e) => {
+
+                    e.preventDefault();
+
+
+                    // Obtener ID
+
+                    const id =
+                        Number(
+                            document.getElementById(
+                                "update_prov_id"
+                            ).value
+                        );
+
+
+                    // Obtener datos del proveedor
+
+                    const proveedor = {
+
+                        id_proveedor: id,
+
+
+                        nombre_empresa:
+                            document.getElementById(
+                                "update_prov_nombre_empresa"
+                            ).value,
+
+
+                        contacto_nombre:
+                            document.getElementById(
+                                "update_prov_contacto_nombre"
+                            ).value,
+
+
+                        telefono:
+                            document.getElementById(
+                                "update_prov_telefono"
+                            ).value,
+
+
+                        email:
+                            document.getElementById(
+                                "update_prov_email"
+                            ).value,
+
+
+                        direccion:
+                            document.getElementById(
+                                "update_prov_direccion"
+                            ).value
+
+                    };
+
+
+                    // Validar
+
+                    if (
+                        !proveedor.id_proveedor ||
+                        !proveedor.nombre_empresa ||
+                        !proveedor.contacto_nombre ||
+                        !proveedor.telefono ||
+                        !proveedor.email ||
+                        !proveedor.direccion
+                    ) {
+
+                        alert(
+                            "Completa correctamente todos los campos."
+                        );
+
+                        return;
+
+                    }
+
+
+                    try {
+
+                        const respuesta =
+                            await fetch(
+                                `${API_URL}/Proveedores/${id}`,
+                                {
+
+                                    method: "PUT",
+
+                                    headers: {
+                                        "Content-Type":
+                                            "application/json"
+                                    },
+
+                                    body:
+                                        JSON.stringify(proveedor)
+
+                                }
+                            );
+
+
+                        if (!respuesta.ok) {
+
+                            const mensaje =
+                                await respuesta.text();
+
+                            throw new Error(mensaje);
+
+                        }
+
+
+                        const proveedorActualizado =
+                            await respuesta.json();
+
+
+                        console.log(
+                            "Proveedor actualizado:",
+                            proveedorActualizado
+                        );
+
+
+                        alert(
+                            "Proveedor actualizado correctamente."
+                        );
+
+
+                        // Limpiar formulario
+
+                        document
+                            .getElementById(
+                                "update-provider-form"
+                            )
+                            .reset();
+
+
+                        // Volver a cargar tabla
+
+                        await cargarProveedores();
+
+                    }
+                    catch (error) {
+
+                        console.error(
+                            "Error al actualizar proveedor:",
+                            error
+                        );
+
+                        alert(error.message);
+
+                    }
+
+                }
+            );
+
+
+        // =========================
+        // ELIMINAR PROVEEDOR
+        // =========================
+
+        document
+            .getElementById("delete-provider-form")
+            .addEventListener(
+                "submit",
+                async (e) => {
+
+                    e.preventDefault();
+
+
+                    // Obtener ID
+
+                    const id =
+                        document.getElementById(
+                            "delete_prov_id"
+                        ).value;
+
+
+                    // Validar
+
+                    if (!id) {
+
+                        alert(
+                            "Ingresa el ID del proveedor."
+                        );
+
+                        return;
+
+                    }
+
+
+                    // Confirmación
+
+                    const confirmar =
+                        confirm(
+                            `¿Seguro que quieres eliminar el proveedor con ID ${id}?`
+                        );
+
+
+                    if (!confirmar) {
+
+                        return;
+
+                    }
+
+
+                    try {
+
+                        const respuesta =
+                            await fetch(
+                                `${API_URL}/Proveedores/${id}`,
+                                {
+                                    method: "DELETE"
+                                }
+                            );
+
+
+                        if (!respuesta.ok) {
+
+                            const mensaje =
+                                await respuesta.text();
+
+                            throw new Error(mensaje);
+
+                        }
+
+
+                        const mensaje =
+                            await respuesta.text();
+
+
+                        console.log(
+                            "Proveedor eliminado:",
+                            mensaje
+                        );
+
+
+                        alert(
+                            "Proveedor eliminado correctamente."
+                        );
+
+
+                        // Limpiar formulario
+
+                        document
+                            .getElementById(
+                                "delete-provider-form"
+                            )
+                            .reset();
+
+
+                        // Volver a cargar tabla
+
+                        await cargarProveedores();
+
+                    }
+                    catch (error) {
+
+                        console.error(
+                            "Error al eliminar proveedor:",
+                            error
+                        );
+
+                        alert(error.message);
+
+                    }
+
+                }
+            );
+
+
+        // =========================
+        // INICIAR
+        // =========================
+
+        cargarProveedores();
+
+    </script>
+
+</body>
+
+</html>
